@@ -4,7 +4,7 @@ import json
 import logging
 import traceback
 import base64
-from parser import generate_openapi_spec
+from parser import generate_openapi_schema
 
 app = func.FunctionApp()
 
@@ -15,17 +15,14 @@ def setSchema(req: func.HttpRequest) -> func.HttpResponse:
     except ValueError as e:
         return func.HttpResponse(f"Invalid JSON: {str(e)}", status_code=400)
     else:
+        specs = {}
         for key, encoded_content in req_body.items():
             try:
                 decoded_bytes = base64.b64decode(encoded_content)
                 decoded_hcl = decoded_bytes.decode('utf-8')
                 
-                spec = generate_openapi_spec(decoded_hcl)
-                return func.HttpResponse(
-                    json.dumps(spec, indent=2),
-                    status_code=200,
-                    mimetype="application/json"
-                )
+                spec = generate_openapi_schema(decoded_hcl)
+                specs[key] = spec
             except UnicodeDecodeError as e:
                 logging.error(f"Base64 decoding failed for {key}: {str(e)}")
                 return func.HttpResponse(f"Invalid base64 encoding in {key}", status_code=400)
@@ -34,7 +31,10 @@ def setSchema(req: func.HttpRequest) -> func.HttpResponse:
                 logging.error(traceback.format_exc())
                 return func.HttpResponse(f"Error processing {key}: {str(e)}", status_code=400)            
 
+    print(specs)
     return func.HttpResponse(
-        status_code=200
+        json.dumps(specs, indent=2),
+        status_code=200,
+        mimetype="application/json"
     )
 

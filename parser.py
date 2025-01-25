@@ -3,6 +3,7 @@ from OpenAPITransformer import OpenAPITransformer
 from TerraformTransformer import TerraformTransformer
 
 # TODO: AI generated, needs work
+# TODO: make sure it handles "in-string" references to other variables
 terraform_parser = Lark(r"""
     start: (variable_block | COMMENT)*
 
@@ -78,13 +79,13 @@ terraform_parser = Lark(r"""
     %ignore COMMENT
 """, start="start")
 
-def generate_openapi_spec(variables_dot_tf_content):
+def generate_openapi_schema(variables_dot_tf_content):
     tree = terraform_parser.parse(variables_dot_tf_content)
     
     # Transform into list of variable blocks (dicts)
     intermediate_format = TerraformTransformer().transform(tree).children
     
-    components = {"schemas": {}}
+    schemas = {}
     for var_block in intermediate_format:
         # Process each variable block into OpenAPI schema
         var_name = var_block["name"]
@@ -99,14 +100,9 @@ def generate_openapi_spec(variables_dot_tf_content):
         if "default" in var_block:
             var_schema["example"] = var_block["default"]
         
-        components["schemas"][var_name] = var_schema
+        schemas[var_name] = var_schema
     
-    print(components)
-    return {
-        "openapi": "3.0.0",
-        "info": {"title": "Terraform Variables API", "version": "1.0.0"},
-        "components": components
-    }
+    return schemas
 
 def _map_tf_type_to_openapi(tf_type):
     # Complex types
