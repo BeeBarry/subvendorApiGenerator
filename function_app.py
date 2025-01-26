@@ -1,22 +1,45 @@
+import os
 import azure.functions as func
-import datetime
 import json
 import logging
 import traceback
 import base64
 from parser import generate_openapi_schema
+from dataclasses import dataclass
+
+@dataclass
+class RequestBody:
+    version: str
+    revision: str
+    contents: dict[str, str]
 
 app = func.FunctionApp()
 
-@app.route(route="setSchema", auth_level=func.AuthLevel.ANONYMOUS)
-def setSchema(req: func.HttpRequest) -> func.HttpResponse:
+@app.function_name(name="createSchema")
+@app.route(route="createSchema/{version}/{revision}", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+@app.blob_output(
+    arg_name="outputblob",
+    path="api-specs/{version}-{revision}",
+    connection=os.getenv("AzureWebJobsStorage")
+)
+def createSchema(req: func.HttpRequest, outputblob: func.Out[str]) -> func.HttpResponse:
     try:
-        req_body = req.get_json()
+        data = req.get_json()
+        req_body = RequestBody(**data)
     except ValueError as e:
         return func.HttpResponse(f"Invalid JSON: {str(e)}", status_code=400)
+    except TypeError as e:
+        return func.HttpResponse(f"Missing required field: {str(e)}", status_code=400)
     else:
+        version = req_body.version
+        revision = req_body.revision
+        contents = req_body.contents
+
+        if not version or not revision:
+            return func.HttpResponse("Missing version or revision", status_code=400)
+
         specs = {}
-        for key, encoded_content in req_body.items():
+        for key, encoded_content in contents.items():
             try:
                 decoded_bytes = base64.b64decode(encoded_content)
                 decoded_hcl = decoded_bytes.decode('utf-8')
@@ -31,10 +54,36 @@ def setSchema(req: func.HttpRequest) -> func.HttpResponse:
                 logging.error(traceback.format_exc())
                 return func.HttpResponse(f"Error processing {key}: {str(e)}", status_code=400)            
 
-    print(specs)
-    return func.HttpResponse(
-        json.dumps(specs, indent=2),
-        status_code=200,
-        mimetype="application/json"
-    )
+        api_spec = {
+            "openapi": "3.0.0",
+            "info": {
+                "title": "Request Subscription API",
+                "version": "1.0.0"
+            },
+            "paths": {
+                "/requestSubscription": {
+                    "post": {
+                        "summary": "Request a subscription",
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": specs
+                                }
+                            }
+                        },
+                        "responses": {
+                            "201": {
+                                "description": "Subscription requested successfully"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        outputblob.set(json.dumps(api_spec))
+    
+        return func.HttpResponse(
+            f"Blob created successfully!",
+            status_code=201
+        )
 

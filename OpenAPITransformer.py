@@ -1,12 +1,14 @@
+from typing import Any
 from lark import Transformer
+
 class OpenAPITransformer(Transformer):
     def __init__(self):
         super().__init__()
-        self.components = {"schemas": {}}
+        self.components: dict[str, dict[str, Any]] = {"schemas": {}}
 
-    def variable_block(self, children):
-        var_name = children["name"]
-        var_def = {
+    def variable_block(self, children: dict[str, Any]) -> str:
+        var_name: str = children["name"]
+        var_def: dict[str, Any] = {
             "type": "object",
             "properties": {},
             "description": children.get("description", ""),
@@ -21,9 +23,9 @@ class OpenAPITransformer(Transformer):
         self.components["schemas"][var_name] = var_def
         return var_name
 
-    def _map_type(self, tf_type):
+    def _map_type(self, tf_type: dict[str, Any]) -> dict[str, Any]:
         # Map Terraform types to OpenAPI types
-        type_mapping = {
+        type_mapping: dict[str, Any] = {
             "any": {"oneOf": [
                 {"type": "string"},
                 {"type": "number"},

@@ -19,6 +19,7 @@ in
       ++ [
         terraform-ls
         terraform-lsp
+        basedpyright
       ]
       # Linters
       ++ [

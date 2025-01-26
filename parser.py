@@ -1,6 +1,7 @@
 from lark import Lark
 from OpenAPITransformer import OpenAPITransformer
 from TerraformTransformer import TerraformTransformer
+from typing import Any
 
 # TODO: AI generated, needs work
 # TODO: make sure it handles "in-string" references to other variables
@@ -79,7 +80,7 @@ terraform_parser = Lark(r"""
     %ignore COMMENT
 """, start="start")
 
-def generate_openapi_schema(variables_dot_tf_content):
+def generate_openapi_schema(variables_dot_tf_content: str) -> dict[str, dict[str, Any]]:
     tree = terraform_parser.parse(variables_dot_tf_content)
     
     # Transform into list of variable blocks (dicts)
