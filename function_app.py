@@ -22,7 +22,7 @@ app = func.FunctionApp()
     path="api-specs/{version}-{revision}",
     connection=os.getenv("AzureWebJobsStorage")
 )
-def createSchema(req: func.HttpRequest, outputblob: func.Out[str]) -> func.HttpResponse:
+def createSchema(req: func.HttpRequest, outputblob: func.Out[str], version: str, revision:str) -> func.HttpResponse:
     try:
         data = req.get_json()
         req_body = RequestBody(**data)
@@ -31,12 +31,7 @@ def createSchema(req: func.HttpRequest, outputblob: func.Out[str]) -> func.HttpR
     except TypeError as e:
         return func.HttpResponse(f"Missing required field: {str(e)}", status_code=400)
     else:
-        version = req_body.version
-        revision = req_body.revision
         contents = req_body.contents
-
-        if not version or not revision:
-            return func.HttpResponse("Missing version or revision", status_code=400)
 
         specs = {}
         for key, encoded_content in contents.items():
@@ -55,10 +50,10 @@ def createSchema(req: func.HttpRequest, outputblob: func.Out[str]) -> func.HttpR
                 return func.HttpResponse(f"Error processing {key}: {str(e)}", status_code=400)            
 
         api_spec = {
-            "openapi": "3.0.0",
+            "openapi": "3.0.0", 
             "info": {
                 "title": "Request Subscription API",
-                "version": "1.0.0"
+                "version": revision
             },
             "paths": {
                 "/requestSubscription": {
