@@ -21,10 +21,11 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
     path="api-specs/{version}-{revision}",
     connection=os.getenv("AzureWebJobsStorage")
 )
-def createSchema(req: func.HttpRequest, outputblob: func.Out[str], version: str, revision:str) -> func.HttpResponse:
+def createSchema(req: func.HttpRequest, outputblob: func.Out[str]) -> func.HttpResponse:
     try:
         data = req.get_json()
         req_body = RequestBody(**data)
+        revision = req.route_params.get('revision')
     except ValueError as e:
         return func.HttpResponse(f"Invalid JSON: {str(e)}", status_code=400)
     except TypeError as e:
