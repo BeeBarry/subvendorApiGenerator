@@ -13,10 +13,9 @@ class RequestBody:
     revision: str
     contents: dict[str, str]
 
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.function_name(name="apigen")
-@app.route(route="createSchema/{version}/{revision}", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
+@app.route(route="createSchema/{version}/{revision}", methods=["POST"])
 @app.blob_output(
     arg_name="outputblob",
     path="api-specs/{version}-{revision}",
