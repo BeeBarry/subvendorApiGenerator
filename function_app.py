@@ -15,7 +15,7 @@ class RequestBody:
 
 app = func.FunctionApp()
 
-@app.function_name(name="api-gen")
+@app.function_name(name="apigen")
 @app.route(route="createSchema/{version}/{revision}", methods=["POST"], auth_level=func.AuthLevel.ANONYMOUS)
 @app.blob_output(
     arg_name="outputblob",
