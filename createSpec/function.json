@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "createSchema/{version}/{revision}"
+      "route": "createSpec/{version}/{revision}"
     },
     {
       "name": "$return",
