@@ -1,0 +1,21 @@
+{
+  "scriptFile": "__init__.py",
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": ["post"],
+      "route": "createSchema/{version}/{revision}"
+    },
+    {
+      "name": "$return",
+      "type": "blob",
+      "dataType": "binary",
+      "path": "api-gen/{httpTrigger}-Copy",
+      "connection": "",
+      "direction": "out"
+    }
+  ]
+}
