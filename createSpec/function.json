@@ -10,10 +10,10 @@
       "route": "createSpec/{version}/{revision}"
     },
     {
-      "name": "$return",
+      "name": "outputblob",
       "type": "blob",
       "dataType": "binary",
-      "path": "api-gen/{httpTrigger}-Copy",
+      "path": "api-gen/{version}-{revision}",
       "connection": "",
       "direction": "out"
     }
