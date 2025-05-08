@@ -10,11 +10,16 @@
       "route": "createSpec/{version}/{revision}"
     },
     {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    },
+    {
       "name": "outputblob",
       "type": "blob",
       "dataType": "binary",
       "path": "api-gen/{version}-{revision}",
-      "connection": "",
+      "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
   ]

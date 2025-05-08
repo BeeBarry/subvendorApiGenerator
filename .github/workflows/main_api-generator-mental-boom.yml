@@ -53,10 +53,14 @@ jobs:
       - name: Unzip artifact
         run: unzip release.zip
 
-      - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
-          app-name: 'api-generator-mental-boom'
-          slot-name: 'Production'
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_F7AFE5EAABF34A9A97BFE8DAF06257D2 }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Functions (via Azure CLI)
+        run: |
+          az functionapp deployment source config-zip \
+            --name api-generator-mental-boom \
+            --resource-group <your-resource-group-name> \
+            --src release.zip

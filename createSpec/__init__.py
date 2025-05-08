@@ -10,8 +10,6 @@ from parser import generate_openapi_schema
 
 @dataclass
 class RequestBody:
-    version: str
-    revision: str
     contents: dict[str, str]
 
 def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
@@ -19,6 +17,7 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
         data = req.get_json()
         req_body = RequestBody(**data)
         revision = req.route_params.get('revision')
+        version = req.route_params.get('version')
     except ValueError as e:
         return func.HttpResponse(f"Invalid JSON: {str(e)}", status_code=400)
     except TypeError as e:
@@ -46,7 +45,7 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
             "openapi": "3.0.0", 
             "info": {
                 "title": "Request Subscription API",
-                "version": revision
+                "version": version
             },
             "paths": {
                 "/requestSubscription": {
