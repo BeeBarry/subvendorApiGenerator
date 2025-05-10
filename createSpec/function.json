@@ -17,8 +17,8 @@
     {
       "name": "outputblob",
       "type": "blob",
-      "dataType": "binary",
-      "path": "api-gen/{version}-{revision}",
+      "dataType": "string",
+      "path": "api-gen/{version}-{revision}.json",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
