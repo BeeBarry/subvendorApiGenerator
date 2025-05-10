@@ -5,6 +5,7 @@
 # Development
 1. create logic app with github rest token in Authorization headers of http methods
 1. deploy function app on flex consumption, linux, python 3.11 with vscode function app extension defaults
+1. switch from storage v1 to v2 (non-essential but easier to work with)
 1. assign storage blob contributor to managed identity of function app
 1. copy function URL, paste in logic app in the Uri field of the "sendToApiGenerator" step
 1. merge a PR in IAC -> logic app triggers -> function app triggers 
