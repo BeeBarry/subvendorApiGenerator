@@ -12,6 +12,10 @@ from parser import generate_openapi_schema
 class RequestBody:
     contents: dict[str, str]
 
+def decodeHcl(encoded_content):
+    decoded_bytes = base64.b64decode(encoded_content)
+    return decoded_bytes.decode('utf-8')
+
 def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
     try:
         data = req.get_json()
@@ -28,11 +32,19 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
         specs = {}
         for key, encoded_content in contents.items():
             try:
-                decoded_bytes = base64.b64decode(encoded_content)
-                decoded_hcl = decoded_bytes.decode('utf-8')
-                
-                spec = generate_openapi_schema(decoded_hcl)
-                specs[key] = spec
+                decoded_hcl = decodeHcl(encoded_content) 
+                dict = hcl2.loads(decoded_hcl)
+                obj={}
+
+                # TODO: error handling
+                for item in dict["variable"]:
+                    for k, v in item.items():
+                        obj[k] = v
+
+                spec = generate_openapi_schema(obj)
+                schemaName = sanitize_schema_name(key)
+
+                specs[schemaName] = spec
             except UnicodeDecodeError as e:
                 logging.error(f"Base64 decoding failed for {key}: {str(e)}")
                 return func.HttpResponse(f"Invalid base64 encoding in {key}", status_code=400)

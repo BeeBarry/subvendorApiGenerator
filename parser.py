@@ -1,7 +1,7 @@
 from lark import Lark
-from OpenAPITransformer import OpenAPITransformer
 from TerraformTransformer import TerraformTransformer
 from typing import Any
+import re
 
 # TODO: AI generated, needs work
 # TODO: make sure it handles "in-string" references to other variables
@@ -80,30 +80,27 @@ terraform_parser = Lark(r"""
     %ignore COMMENT
 """, start="start")
 
-def generate_openapi_schema(variables_dot_tf_content: str) -> dict[str, dict[str, Any]]:
-    tree = terraform_parser.parse(variables_dot_tf_content)
-    
-    # Transform into list of variable blocks (dicts)
-    intermediate_format = TerraformTransformer().transform(tree).children
-    
-    schemas = {}
-    for var_block in intermediate_format:
-        # Process each variable block into OpenAPI schema
-        var_name = var_block["name"]
-        var_schema = {
-            "type": "object",
-            "properties": {
-                "value": _map_tf_type_to_openapi(var_block.get("type", "any"))
-            },
-            "description": var_block.get("description", "")
-        }
+def sanitize_schema_name(name):
+    name = re.sub(r"[^a-zA-Z0-9_]", "_", name)
+    return name.replace("_variables_tf", "")
+
+def generate_openapi_schema(input_object):
+    schema = {
+        "type": "object",
+        "properties": {}
+    }
+
+    for key, value in input_object.items():
+        # Use the _map_tf_type_to_openapi function to map the type
+        property_schema = _map_tf_type_to_openapi(value["type"])
+        property_schema["description"] = value.get("description", "")
         
-        if "default" in var_block:
-            var_schema["example"] = var_block["default"]
+        if "default" in value:
+            property_schema["default"] = value["default"]
         
-        schemas[var_name] = var_schema
-    
-    return schemas
+        schema["properties"][key] = property_schema
+
+    return schema
 
 def _map_tf_type_to_openapi(tf_type):
     # Complex types
