@@ -4,9 +4,10 @@ import os
 import json
 import traceback
 import base64
+import hcl2
 
 from dataclasses import dataclass
-from parser import generate_openapi_schema
+from parser import generate_openapi_schema, sanitize_schema_name
 
 @dataclass
 class RequestBody:
@@ -15,6 +16,34 @@ class RequestBody:
 def decodeHcl(encoded_content):
     decoded_bytes = base64.b64decode(encoded_content)
     return decoded_bytes.decode('utf-8')
+
+def getApiSpec(schemas, version):
+    return {
+        "openapi": "3.0.0", 
+        "info": {
+            "title": "Request Subscription API",
+            "version": version
+        },
+        "paths": {
+            "/requestSubscription": {
+                "post": {
+                    "summary": "Request a subscription",
+                    "requestBody": {
+                        "content": {
+                            "application/json": {
+                                "schema": schemas
+                            }
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "Subscription requested successfully"
+                        }
+                    }
+                }
+            }
+        }
+    }
 
 def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
     try:
@@ -29,7 +58,10 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
     else:
         contents = req_body.contents
 
-        specs = {}
+        specs = {
+            "type": "object",
+            "properties": {}
+        }
         for key, encoded_content in contents.items():
             try:
                 decoded_hcl = decodeHcl(encoded_content) 
@@ -44,7 +76,7 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
                 spec = generate_openapi_schema(obj)
                 schemaName = sanitize_schema_name(key)
 
-                specs[schemaName] = spec
+                specs["properties"][schemaName] = spec
             except UnicodeDecodeError as e:
                 logging.error(f"Base64 decoding failed for {key}: {str(e)}")
                 return func.HttpResponse(f"Invalid base64 encoding in {key}", status_code=400)
@@ -53,32 +85,7 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
                 logging.error(traceback.format_exc())
                 return func.HttpResponse(f"Error processing {key}: {str(e)}", status_code=400)            
 
-        api_spec = {
-            "openapi": "3.0.0", 
-            "info": {
-                "title": "Request Subscription API",
-                "version": version
-            },
-            "paths": {
-                "/requestSubscription": {
-                    "post": {
-                        "summary": "Request a subscription",
-                        "requestBody": {
-                            "content": {
-                                "application/json": {
-                                    "schema": specs
-                                }
-                            }
-                        },
-                        "responses": {
-                            "201": {
-                                "description": "Subscription requested successfully"
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        api_spec = getApiSpec(specs, version)
         outputblob.set(json.dumps(api_spec))
     
         return func.HttpResponse(

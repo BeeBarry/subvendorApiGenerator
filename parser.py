@@ -2,6 +2,8 @@ from lark import Lark
 from TerraformTransformer import TerraformTransformer
 from typing import Any
 import re
+import copy
+import json
 
 # TODO: AI generated, needs work
 # TODO: make sure it handles "in-string" references to other variables
@@ -85,13 +87,14 @@ def sanitize_schema_name(name):
     return name.replace("_variables_tf", "")
 
 def generate_openapi_schema(input_object):
+    print(json.dumps(input_object, indent=2))
     schema = {
         "type": "object",
         "properties": {}
     }
+    schemaOfSchemas = copy.copy(schema)
 
     for key, value in input_object.items():
-        # Use the _map_tf_type_to_openapi function to map the type
         property_schema = _map_tf_type_to_openapi(value["type"])
         property_schema["description"] = value.get("description", "")
         
@@ -99,7 +102,6 @@ def generate_openapi_schema(input_object):
             property_schema["default"] = value["default"]
         
         schema["properties"][key] = property_schema
-
     return schema
 
 def _map_tf_type_to_openapi(tf_type):

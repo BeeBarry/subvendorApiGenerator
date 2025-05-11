@@ -4,3 +4,4 @@
 
 azure-functions
 lark
+python-hcl2

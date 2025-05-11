@@ -21,6 +21,16 @@
 - [ ] load balancing/queueing
 - [ ] docs
 - [ ] deprecation
+- [ ] specs["properties"][schemaName] = spec really needs to handle duplicate keys or variables will overwrite each other
 
 # Notes
 some incompatibility with oryx (build system used in python function apps) and linux flex consumption means the default CICD provided by azure doesnt work
+
+
+{"openapi": "3.0.0", "info": {"title": "Request Subscription API", "version": "versioning-not-implemented"}, "paths": {"/requestSubscription": {"post": {"summary": "Request a subscription", "requestBody": {"content": {"application/json": {"schema": {"modules_subscription": {"type": "object", "properties": {"location_short": {"type": "string", "description": "The Azure region short name"}}}}}}}, "responses": {"201": {"description": "Subscription requested successfully"}}}}}}
+
+ One or more fields contain incorrect values:
+
+    Parsing error(s): modules_subscription is not a valid property at #/paths/~1requestSubscription/post/requestBody/content/application~1json/schema []
+    Parsing error(s): The input OpenAPI file is not valid for the OpenAPI specification https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md (schema https://github.com/OAI/OpenAPI-Specification/blob/master/schemas/v3.0/schema.yaml).
+
