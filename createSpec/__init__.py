@@ -49,7 +49,6 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
     try:
         data = req.get_json()
         req_body = RequestBody(**data)
-        revision = req.route_params.get('revision')
         version = req.route_params.get('version')
     except ValueError as e:
         return func.HttpResponse(f"Invalid JSON: {str(e)}", status_code=400)

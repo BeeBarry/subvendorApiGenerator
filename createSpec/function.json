@@ -7,7 +7,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "createSpec/{version}/{revision}"
+      "route": "createSpec/{version}"
     },
     {
       "type": "http",
@@ -18,7 +18,7 @@
       "name": "outputblob",
       "type": "blob",
       "dataType": "string",
-      "path": "api-gen/{version}-{revision}.json",
+      "path": "api-gen/{version}.json",
       "connection": "AzureWebJobsStorage",
       "direction": "out"
     }
