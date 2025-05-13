@@ -90,9 +90,9 @@ def generate_openapi_schema(input_object):
     print(json.dumps(input_object, indent=2))
     schema = {
         "type": "object",
-        "properties": {}
+        "properties": {},
+        "additionalProperties": False
     }
-    schemaOfSchemas = copy.copy(schema)
 
     for key, value in input_object.items():
         property_schema = _map_tf_type_to_openapi(value["type"])

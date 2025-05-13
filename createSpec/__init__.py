@@ -59,7 +59,8 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
 
         specs = {
             "type": "object",
-            "properties": {}
+            "properties": {},
+            "additionalProperties": False
         }
         for key, encoded_content in contents.items():
             try:
