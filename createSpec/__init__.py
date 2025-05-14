@@ -55,39 +55,35 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
     except TypeError as e:
         return func.HttpResponse(f"Missing required field: {str(e)}", status_code=400)
     else:
-        contents = req_body.contents
-
         specs = {
             "type": "object",
             "properties": {
                 "subscription_id":{ "type": "string", },
             },
             "additionalProperties": False,
-            "required": ["subscription_id"] # TODO: add required tf variables
+            "required": ["subscription_id"] # TODO: add required tf variables dynamically
         }
 
-        for key, encoded_content in contents.items():
-            try:
-                decoded_hcl = decodeHcl(encoded_content) 
-                dict = hcl2.loads(decoded_hcl)
-                obj={}
+        try:
+            decoded_hcl = decodeHcl(req_body.contents) 
+            hcldict = hcl2.loads(decoded_hcl)
+            obj={}
 
-                # TODO: error handling
-                for item in dict["variable"]:
-                    for k, v in item.items():
-                        obj[k] = v
+            for item in hcldict["variable"]:
+                for k, v in item.items():
+                    obj[k] = v
 
-                spec = generate_openapi_schema(obj)
-                schemaName = sanitize_schema_name(key)
+            spec = generate_openapi_schema(obj)
+            # schemaName = sanitize_schema_name(key)
 
-                specs["properties"][schemaName] = spec
-            except UnicodeDecodeError as e:
-                logging.error(f"Base64 decoding failed for {key}: {str(e)}")
-                return func.HttpResponse(f"Invalid base64 encoding in {key}", status_code=400)
-            except Exception as e:
-                logging.error(f"Processing failed for {key}: {str(e)}")
-                logging.error(traceback.format_exc())
-                return func.HttpResponse(f"Error processing {key}: {str(e)}", status_code=400)            
+            specs["properties"]["variables"] = spec
+        except UnicodeDecodeError as e:
+            logging.error(f"Base64 decoding failed: {str(e)}")
+            return func.HttpResponse(f"Invalid base64 encoding.", status_code=400)
+        except Exception as e:
+            logging.error(f"Something failed: {str(e)}")
+            logging.error(traceback.format_exc())
+            return func.HttpResponse(f"Error processing: {str(e)}", status_code=400)            
 
         api_spec = getApiSpec(specs, version)
         outputblob.set(json.dumps(api_spec))
