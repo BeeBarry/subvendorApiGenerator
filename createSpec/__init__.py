@@ -59,9 +59,10 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
             "type": "object",
             "properties": {
                 "subscription_id":{ "type": "string", },
+                "tenant_id":{ "type": "string", },
             },
             "additionalProperties": False,
-            "required": ["subscription_id"] # TODO: add required tf variables dynamically
+            "required": ["subscription_id","tenant_id"] # TODO: add required tf variables dynamically
         }
 
         try:
