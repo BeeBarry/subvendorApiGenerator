@@ -59,9 +59,13 @@ def main(req: func.HttpRequest, outputblob: func.Out[bytes]):
 
         specs = {
             "type": "object",
-            "properties": {},
-            "additionalProperties": False
+            "properties": {
+                "subscripition_id":{ "type": "string", },
+            },
+            "additionalProperties": False,
+            "required": ["subscription_id"] # TODO: add required tf variables
         }
+
         for key, encoded_content in contents.items():
             try:
                 decoded_hcl = decodeHcl(encoded_content) 

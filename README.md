@@ -23,6 +23,7 @@
 - [ ] docs
 - [ ] deprecation
 - [ ] specs["properties"][schemaName] = spec really needs to handle duplicate keys or variables will overwrite each other
+- [ ] required fields in openapi spec
 
 # Notes
 some incompatibility with oryx (build system used in python function apps) and linux flex consumption means the default CICD provided by azure doesnt work
