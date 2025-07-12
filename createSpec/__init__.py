@@ -1,4 +1,4 @@
-# Test comment to trigger pipeline (see if it works)
+# Test comment to trigger pipeline (see if it works).
 
 import logging
 import azure.functions as func
